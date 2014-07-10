@@ -120,7 +120,7 @@ const int g_Count = 150;
 
 int main() {
   static_assert(g_Count < 100, 
-    "Count must not exceed 100.");  // Compilation error
+	"Count must not exceed 100.");  // Compilation error
   Stack&lt;int, 10&gt; s1; // OK
   Stack&lt;int, 0&gt; s2;  // Compilation error
 }
@@ -273,8 +273,8 @@ Color CropColor(Color color)  // Shallow copy of built-in array
 {
   for (int i = 0; i < 3; ++i)
   {
-    // Crop into [0; 1] range
-    color[i] = std::max(0.0, std::min(color[i], 1.0));
+	// Crop into [0; 1] range
+	color[i] = std::max(0.0, std::min(color[i], 1.0));
   }
 
   return color;  // Cannot return built-in array
@@ -291,8 +291,8 @@ Color CropColor(Color color)  // Deep copy of std::array
 {
   for (int i = 0; i < 3; ++i)
   {
-    // Crop into [0; 1] range
-    color[i] = std::max(0.0, std::min(color[i], 1.0));
+	// Crop into [0; 1] range
+	color[i] = std::max(0.0, std::min(color[i], 1.0));
   }
 
   return color;  // Return is ok
@@ -315,10 +315,10 @@ enum Status;
 const char* GetErrorMessage(Status status)
 {
   static const char* messages[] = {
-    "OK",                            // STATUS_OK
-    "Unknown error",                 // STATUS_ERROR
-    "Not enough memory",             // STATUS_MEMORY
-    "Filesystem error"               // STATUS_IO
+	"OK",                            // STATUS_OK
+	"Unknown error",                 // STATUS_ERROR
+	"Not enough memory",             // STATUS_MEMORY
+	"Filesystem error"               // STATUS_IO
   };
   return messages[status];
 }
@@ -437,7 +437,7 @@ void WriteToFile(const std::string& message)
   // try to open file
   std::ofstream file("example.txt");
   if (!file.is_open())
-    throw std::runtime_error("unable to open file");
+	throw std::runtime_error("unable to open file");
 
   // write message to file
   file << message << std::endl;
@@ -446,7 +446,7 @@ void WriteToFile(const std::string& message)
   // mutex will be unlocked 2nd (from lock destructor) when leaving
   // scope (regardless of exception)
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -497,17 +497,17 @@ public:
 
   ~ScopeGuard() 
   { 
-    if (m_f)
-    {
-      try 
-      {
-        m_f(); 
-      }
-      catch (std::exception&)
-      {
-        // Some assertions or logging here
-      }
-    }
+	if (m_f)
+	{
+	  try 
+	  {
+		m_f(); 
+	  }
+	  catch (std::exception&)
+	  {
+		// Some assertions or logging here
+	  }
+	}
   }
 
   // Disable copy operations, enable move operations
@@ -515,7 +515,7 @@ public:
 private:
   std::function&lt;void()&gt; m_f;
 };
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -536,16 +536,16 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   for (int i = 0; i < count; i++)
   {
-    pos += step;
-    pHardware->SetPosition(pos);
-    pHardware->TakeSnapshot();
+	pos += step;
+	pHardware->SetPosition(pos);
+	pHardware->TakeSnapshot();
   }
 
   pHardware->SetPosition(startPos);
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -566,16 +566,16 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   for (int i = 0; i < count; i++)
   {
-    pos += step;
-    pHardware->SetPosition(pos);
-    if (!pHardware->TakeSnapshot()) return false;
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
   }
 
   pHardware->SetPosition(startPos);
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -596,20 +596,20 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   for (int i = 0; i < count; i++)
   {
-    pos += step;
-    pHardware->SetPosition(pos);
-    if (!pHardware->TakeSnapshot()) 
-    {
-      pHardware->SetPosition(startPos);  // DRY!
-      return false;
-    }
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) 
+	{
+	  pHardware->SetPosition(startPos);  // DRY!
+	  return false;
+	}
   }
 
   pHardware->SetPosition(startPos);
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -632,14 +632,14 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   for (int i = 0; i < count; i++)
   {
-    pos += step;
-    pHardware->SetPosition(pos);
-    if (!pHardware->TakeSnapshot()) return false;
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
   }
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -656,7 +656,7 @@ void CreateAndSaveColorProfile(const std::string& path)
 
   // Create and save profile, both operations might throw
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -668,18 +668,18 @@ class ScopeGuard
 
   void Discard()
   {
-    m_f = nullptr;
+	m_f = nullptr;
   }
 
   void Apply()
   {
-    m_f();
-    m_f = nullptr;
+	m_f();
+	m_f = nullptr;
   }
 
   ...
 };
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -694,9 +694,9 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   for (int i = 0; i < count; i++)
   {
-    pos += step;
-    pHardware->SetPosition(pos);
-    if (!pHardware->TakeSnapshot()) return false;
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
   }
   
   posGuard.Apply();
@@ -705,7 +705,7 @@ bool DoScan(double step, int count, IHardware* pHardware)
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -730,7 +730,7 @@ bool Stitch(IImageStitcher* pStitcher)
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -744,18 +744,18 @@ bool Stitch(IImageStitcher* pStitcher)
 
   if (!pStitcher->Initialize())
   {
-    std::cout << pStitcher->GetStatusDescr() << std::endl;
-    return false;
+	std::cout << pStitcher->GetStatusDescr() << std::endl;
+	return false;
   }
   if (!pStitcher->StitchImages(pImages))
   {
-    std::cout << pStitcher->GetStatusDescr() << std::endl;
-    return false;
+	std::cout << pStitcher->GetStatusDescr() << std::endl;
+	return false;
   }
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section data-transition="none">
@@ -768,7 +768,7 @@ bool Stitch(IImageStitcher* pStitcher)
   // Populate collection with images
 
   ScopeGuard errorGuard([&] () { 
-    std::cout << pStitcher->GetStatusDescr() << std::endl; 
+	std::cout << pStitcher->GetStatusDescr() << std::endl; 
   });
 
   if (!pStitcher->Initialize()) return false;
@@ -778,7 +778,7 @@ bool Stitch(IImageStitcher* pStitcher)
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -787,7 +787,7 @@ bool Stitch(IImageStitcher* pStitcher)
 bool InitializeData(Data& data)
 {
   ScopeGuard defaultGuard([&] () { 
-    data = Data::GetDefaultValue(); 
+	data = Data::GetDefaultValue(); 
   });
 
   if (!DoFirstInitializationStep(data)) return false;
@@ -798,7 +798,7 @@ bool InitializeData(Data& data)
 
   return true;
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -817,7 +817,7 @@ void SaveData(const Data& data)
   diskGuard.Discard();
   databaseGuard.Discard();
 }
-				    </code></pre>
+					</code></pre>
 				</section>
 
 				<section>
@@ -911,11 +911,10 @@ void SaveData(const Data& data)
 				</section>
 
 				<section>
-					<h2>Настройка репозитория</h2>
+					<h2>Репозиторий</h2>
 					<p>
-						Все пакеты доступны в SVN
+						Пакеты доступны на <a href="https://octonus-teams.com:7843/feeds/third-party-components">NuGet-сервере</a> (пока тестовый режим)
 					</p>
-					<img src=".\img\nuget svn repo.png" alt="Packages in SVN" />
 				</section>
 
 				<section>
