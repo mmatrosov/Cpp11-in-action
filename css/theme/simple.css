@@ -15,7 +15,7 @@ body {
   background-color: white; }
 
 .reveal {
-  font-family: "Lato", sans-serif;
+  font-family: Calibri;
   font-size: 36px;
   font-weight: normal;
   letter-spacing: -0.02em;
@@ -37,7 +37,6 @@ body {
 .reveal h6 {
   margin: 0 0 20px 0;
   color: black;
-  font-family: "News Cycle", Impact, sans-serif;
   line-height: 0.9em;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -73,7 +72,7 @@ body {
 .reveal section img {
   margin: 15px 0px;
   background: rgba(255, 255, 255, 0.12);
-  border: 4px solid black;
+//  border: 4px solid black;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
   -webkit-transition: all .2s linear;
   -moz-transition: all .2s linear;
