@@ -1,52 +1,1040 @@
-<!doctype html>
-<html>
-	<head>
+﻿<!doctype html>
+<html lang="en">
 
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="chrome=1">
-		<title>reveal.js - The HTML Presentations Framework</title>
+<head>
+	<meta charset="utf-8">
 
-		<link rel="stylesheet" href="css/normalize.css">
-		<link rel="stylesheet" href="css/main.css">
+	<title>C++11 in action</title>
 
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<meta name="description" content="Purely practical overview of several C++11 features">
+	<meta name="author" content="Mikhail Matrosov">
 
-		<!--[if lt IE 9]>
-		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.min.css">
+	<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+	<!-- For syntax highlighting -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+	<script>
+		if (window.location.search.match(/print-pdf/gi)) {
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = 'css/print/pdf.css';
+			document.getElementsByTagName('head')[0].appendChild(link);
+		}
+		</script>
+
+	<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+</head>
 
-	</head>
-	<body>
-		<div class="wrapper">
+<body>
+	<div class="reveal">
 
-			<header>
-
-				<h1>reveal.js</h1>
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section>
+				<h1>C++11 in action</h1>
 				<p>
-					The HTML Presentation Framework &mdash; Site coming soon
+					<small>By <a href="mailto:matrosov@octonus.com">Mikhail Matrosov</a> </small>
 				</p>
+			</section>
 
-			</header>
+			<section>
+				<h2>Содержание</h2>
+				<ul>
+					<li>
+						<a href="#/2">Небольшие полезности</a>
+						<ul>
+							<li><a href="#/2/1">nullptr</a></li>
+							<li><a href="#/2/2">static_assert</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#/3">Малоиспользуемые контейнеры</a>
+						<ul>
+							<li><a href="#/3/1">std::tuple</a></li>
+							<li><a href="#/3/7">std::array</a></li>
+						</ul>
+					</li>
+					<li><a href="#/4">RAII & ScopeGuard</a></li>
+					<li><a href="#/5">boost & NuGet</a></li>
+				</ul>
+			</section>
 
-			<footer>
+			<!-- Features -->
+			<section>
 
-				<p>
-					<a href="http://lab.hakim.se/reveal-js">Try the demo</a>
-					<a href="https://github.com/hakimel/reveal.js/releases">Download</a>
-				</p>
+				<section>
+					<h2><u>Небольшие полезности</u></h2>
+				</section>
 
-			</footer>
+				<section>
+					<h2>nullptr</h2>
+					<p>
+						Ключевое слово, явно обозначающее нулевой указатель
+					</p>
+					<ul>
+						<li>Имеет тип nullptr_t, а 0 и NULL имеют тип int</li>
+						<li>NULL понятнее, чем 0, а nullptr безопаснее, чем NULL</li>
+					</ul>
+
+					<pre><code data-trim class="stretch cpp">
+void foo(int) { cout << "int" << endl; }
+void foo(void*) { cout << "void*" << endl; }
+
+int main() {
+  foo(0);        // int
+  foo(nullptr);  // void*
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>static_assert</h2>
+					<p>
+						Проверка условия на этапе компиляции
+					</p>
+
+					<pre><code data-trim class="stretch cpp">
+// Compilation error on x64 configuration
+static_assert(sizeof(void *) == 4, 
+  "64-bit code generation is not supported.");
+
+template&lt;class T, int C&gt; class Stack {
+  T* m_pBuffer[C];
+  static_assert(C > 0, "Stack capacity must be positive.");
+public:
+  // Member function definition
+};
+
+const int g_Count = 150;
+
+int main() {
+  static_assert(g_Count < 100, 
+	"Count must not exceed 100.");  // Compilation error
+  Stack&lt;int, 10&gt; s1; // OK
+  Stack&lt;int, 0&gt; s2;  // Compilation error
+}
+					</code></pre>
+				</section>
+
+			</section>
+
+			<!-- Containers -->
+			<section>
+
+				<section>
+					<h2><u>Малоиспользуемые контейнеры</u></h2>
+				</section>
+
+				<section>
+					<h2>std::tuple</h2>
+					<p>
+						Кортеж из нескольких элементов
+					</p>
+					<ul>
+						<li>Обобщение std::pair</li>
+						<li>Произвольное количество элементов</li>
+						<li>Произвольные типы элементов</li>
+						<li>Определено отношение порядка</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Работа с std::tuple</h2>
+					<pre><code data-trim class="stretch cpp">
+// Explicit types and initialization
+std::tuple&lt;int, double, std::string&gt; t1(42, 3.14, "foo");
+  
+// Deduced types, same as above
+auto t2 = std::make_tuple(42, 3.14, "foo");
+
+// Explicit retrieval of elements
+int i = std::get<0>(t2);
+double d = std::get<1>(t2);
+std::string s = std::get<2>(t2);
+
+// Batch retrieval of all elements, same as above
+std::tie(i, d, s) = t2;
+
+// Batch retrieval of several elements
+std::tie(i, std::ignore, s) = t2;
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Функциональный вид</h2>
+					<pre><code data-trim class="stretch cpp">
+void FindFurthestVertices(const Graph& graph, int& v1, int& v2, double& d);
+
+void foo(const Graph& graph)
+{
+  int v1, v2;
+  double d;
+
+  FindFurthestVertices(graph, v1, v2, d);
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Функциональный вид</h2>
+					<pre><code data-trim class="stretch cpp">
+std::tuple&lt;int, int, double&gt; FindFurthestVertices(const Graph& graph);
+
+void foo(const Graph& graph)
+{
+  int v1, v2;
+  double d;
+
+  std::tie(v1, v2, d) = FindFurthestVertices(graph);
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h3>
+						Какая альтернатива в C++98?
+					</h3>
+				</section>
+
+				<section>
+					<h2>std::tuple vs. struct</h2>
+					<ul>
+						<li>
+							Pros:
+							<ul>
+								<li>Не создаётся дополнительной сущности</li>
+								<li>Автоматически определяется конструктор</li>
+								<li>Автоматически определяется отношение порядка</li>
+							</ul>
+						</li>
+						<li>
+							Cons:
+							<ul>
+								<li>Страшный std::get<></li>
+								<li>Нельзя именовать поля</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>std::array</h2>
+					<p>
+						Обёртка для встроенных массивов в стиле C++
+					</p>
+					<ul>
+						<li>Размер известен на этапе компиляции</li>
+						<li>Целиком располагается в стеке</li>
+						<li>Стандартный контейнер STL</li>
+						<li>Определены операции копирования и присваивания</li>
+						<li>Определено отношение порядка</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Работа с std::array</h2>
+					<pre><code data-trim class="stretch cpp">
+const int count = 5;
+// Supports initialization lists
+std::array&lt;int, count&gt; a = { 2, 3, 5, 7, 11 };
+// Guaranteed to be stored just like native array
+static_assert(sizeof(a) == count * sizeof(int), "Non-standard");
+// Supports copying and assignment
+std::array&lt;int, 5&gt; b = a;
+// Some useful built-in methods
+a.fill(0);
+// Supports comparison
+if (a < b) std::cout << "Works!" << std::endl;  // Really works
+// Provide direct access to data
+int* pB = b.data();
+// Supports common STL-container interface
+std::cout << a.size() << std::endl;  // 5
+for (auto i = b.cbegin(); i != b.cend(); ++i) std::cout << *i << " ";
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>built-in arrays и функции</h2>
+					<pre><code data-trim class="stretch cpp">
+typedef double Color[3];
+
+Color CropColor(Color color)  // Shallow copy of built-in array
+{
+  for (int i = 0; i < 3; ++i)
+  {
+	// Crop into [0; 1] range
+	color[i] = std::max(0.0, std::min(color[i], 1.0));
+  }
+
+  return color;  // Cannot return built-in array
+}					
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>std::array и функции</h2>
+					<pre><code data-trim class="stretch cpp">
+typedef std::array&lt;double, 3&gt; Color;
+
+Color CropColor(Color color)  // Deep copy of std::array
+{
+  for (int i = 0; i < 3; ++i)
+  {
+	// Crop into [0; 1] range
+	color[i] = std::max(0.0, std::min(color[i], 1.0));
+  }
+
+  return color;  // Return is ok
+}					
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Что использовать?</h2>
+					<p>
+						Практически всегда следует пользоваться std::array. Возможные исключения:
+					</p>
+					<ul>
+						<li>Для константных списков, размер которых может меняться</li>
+						<li>Для поддержания единого стиля</li>
+					</ul>
+					<pre><code data-trim class="stretch cpp">
+enum Status;
+
+const char* GetErrorMessage(Status status)
+{
+  static const char* messages[] = {
+	"OK",                            // STATUS_OK
+	"Unknown error",                 // STATUS_ERROR
+	"Not enough memory",             // STATUS_MEMORY
+	"Filesystem error"               // STATUS_IO
+  };
+  return messages[status];
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>std::array vs. built-in array</h2>
+					<ul>
+						<li>
+							Pros:
+							<ul>
+								<li>STL-совместимый интерфейс</li>
+								<li>Можно копировать и присваивать</li>
+								<li>Можно передавать и возвращать по значению</li>
+								<li>Можно сравнивать</li>
+								<li>Многомерные варианты не взрывают мозг</li>
+							</ul>
+						</li>
+						<li>
+							Cons:
+							<ul>
+								<li>Нет автоматического определения размера из списка инициализации</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>std::array, std::tuple, std::pair</h2>
+					<ul>
+						<li>Размер известен на этапе компиляции</li>
+						<li>Не выделяют динамической памяти</li>
+						<li>Определено отношение порядка</li>
+						<li>Поддерживают std::get<></li>
+						<li>Обычно легковесные объекты</li>
+					</ul>
+				</section>
+
+			</section>
+
+			<!-- RAII -->
+			<section>
+
+				<section>
+					<h2><u>RAII & ScopeGuard</u></h2>
+				</section>
+
+				<section>
+					<h2>Лирическое отступление</h2>
+					<p>
+						Из докалада Скотта Мейерса "<a href="http://tech.yandex.ru/events/cpp-party/june-msk/talks/1954/">Why C++ Sails When the Vasa Sank</a>", почему С++ так популярен, несмотря на сложность
+					</p>
+					<ul>
+						<li class="fragment">
+							Совместимость с С
+							<ul>
+								<li>42% <em>всего</em> (открытого) кода в мире написаны на С</li>
+							</ul>
+						</li>
+						<li class="fragment">
+							Очень гибкие возможности
+							<ul>
+								<li><b>Деструкторы</b></li>
+								<li>Шаблоны</li>
+								<li>Перегрузка</li>
+							</ul>
+						</li>
+						<li class="fragment">
+							Мультипарадигменность
+							<ul>
+								<li>Процедурное программирование (STL)</li>
+								<li>Объектно-ориентированное (классы)</li>
+								<li>Обобщённое программирование (шаблоны)</li>
+								<li>Функциональное программирование (лямбды)</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>RAII</h2>
+					<p>
+						Resource Acquisition Is Initialization
+					</p>
+					<ul>
+						<li>
+							Владение ресурсом ассоциируется с временем жизни объекта
+							<ul>
+								<li>Конструктор (initialization) захватывает ресурс (acquisition)</li>
+								<li>Деструктор освобождает ресурс</li>
+							</ul>
+						</li>
+						<li>Момент вызова деструктора чётко определён, следовательно знаем точный момент освобождения ресурса</li>
+						<li>
+							Альтернативные названия:
+							<ul>
+								<li>CADRe (Constructor Acquires Destructor Releases)</li>
+								<li>SBRM (Scope Bounded Resource Management)</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>RAII</h2>
+					<pre><code data-trim class="stretch cpp">
+void WriteToFile(const std::string& message) 
+{
+  // mutex to protect file access
+  static std::mutex mutex;
+
+  // lock mutex before accessing file
+  std::lock_guard&lt;std::mutex&gt; lock(mutex);
+
+  // try to open file
+  std::ofstream file("example.txt");
+  if (!file.is_open())
+	throw std::runtime_error("unable to open file");
+
+  // write message to file
+  file << message << std::endl;
+
+  // file will be closed 1st when leaving scope (regardless of exception)
+  // mutex will be unlocked 2nd (from lock destructor) when leaving
+  // scope (regardless of exception)
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>RAII</h2>
+					<p>
+						Владение ресурсом ассоциируется с временем жизни объекта
+					</p>
+					<ul>
+						<li>
+							Стратегия управления любыми ресурсами
+							<ul>
+								<li>GC управляет только памятью</li>
+							</ul>
+						</li>
+						<li>Безопасность при исключениях</li>
+						<li>Безопасность при нескольких точках возврата</li>
+					</ul>
+					<p>
+						Примеры:
+					</p>
+					<ul>
+						<li>std::fstream - управление файлом</li>
+						<li>std::vector, std::shared_ptr - управление памятью</li>
+						<li>std::lock_guard - управление разделяемым ресурсом</li>
+						<li>new в конструкторе, delete в деструкторе</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>ScopeGuard</h2>
+					<p>
+						Класс, который выполняет заданную функцию в деструкторе. Позволяет использовать идиому RAII там, где её не хватает.
+					</p>
+					<ul>
+						<li>Управление любым собственным ресурсом</li>
+						<li>Локализация кода инициализации/деинициализации</li>
+						<li>Другие неожиданные применения</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Код ScopeGuard.h</h2>
+					<pre><code data-trim class="stretch cpp">
+class ScopeGuard
+{
+public:
+  ScopeGuard(std::function&lt;void()&gt; f) : m_f(f) {}
+
+  ~ScopeGuard() 
+  { 
+	if (m_f)
+	{
+	  try 
+	  {
+		m_f(); 
+	  }
+	  catch (std::exception&)
+	  {
+		// Some assertions or logging here
+	  }
+	}
+  }
+
+  // Disable copy operations, enable move operations
+
+private:
+  std::function&lt;void()&gt; m_f;
+};
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Восстановление состояния</h2>
+					<pre><code data-trim class="stretch cpp">
+class IHardware
+{
+public:
+  virtual double GetPosition() const = 0;
+  virtual void SetPosition(double position) = 0;
+  virtual bool TakeSnapshot() = 0;  // Might fail
+};
+
+bool DoScan(double step, int count, IHardware* pHardware)
+{
+  double startPos = pHardware->GetPosition();
+  double pos = startPos;
+
+  for (int i = 0; i < count; i++)
+  {
+	pos += step;
+	pHardware->SetPosition(pos);
+	pHardware->TakeSnapshot();
+  }
+
+  pHardware->SetPosition(startPos);
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Восстановление состояния</h2>
+					<pre><code data-trim class="stretch cpp">
+class IHardware
+{
+public:
+  virtual double GetPosition() const = 0;
+  virtual void SetPosition(double position) = 0;
+  virtual bool TakeSnapshot() = 0;  // Might fail
+};
+
+bool DoScan(double step, int count, IHardware* pHardware)
+{
+  double startPos = pHardware->GetPosition();
+  double pos = startPos;
+
+  for (int i = 0; i < count; i++)
+  {
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
+  }
+
+  pHardware->SetPosition(startPos);
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Восстановление состояния</h2>
+					<pre><code data-trim class="stretch cpp">
+class IHardware
+{
+public:
+  virtual double GetPosition() const = 0;
+  virtual void SetPosition(double position) = 0;
+  virtual bool TakeSnapshot() = 0;  // Might fail
+};
+
+bool DoScan(double step, int count, IHardware* pHardware)
+{
+  double startPos = pHardware->GetPosition();
+  double pos = startPos;
+
+  for (int i = 0; i < count; i++)
+  {
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) 
+	{
+	  pHardware->SetPosition(startPos);  // DRY!
+	  return false;
+	}
+  }
+
+  pHardware->SetPosition(startPos);
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Восстановление состояния</h2>
+					<pre><code data-trim class="stretch cpp">
+class IHardware
+{
+public:
+  virtual double GetPosition() const = 0;
+  virtual void SetPosition(double position) = 0;
+  virtual bool TakeSnapshot() = 0;  // Might fail
+};
+
+bool DoScan(double step, int count, IHardware* pHardware)
+{
+  double startPos = pHardware->GetPosition();
+  double pos = startPos;
+
+  ScopeGuard posGuard([&] () { pHardware->SetPosition(startPos); });
+
+  for (int i = 0; i < count; i++)
+  {
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
+  }
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Безопасный С-код</h2>
+					<pre><code data-trim class="stretch cpp">
+cmsHPROFILE cmsCreateProfilePlaceholder(cmsContext ContextID);
+cmsBool cmsCloseProfile(cmsHPROFILE hProfile);
+
+void CreateAndSaveColorProfile(const std::string& path)
+{
+  cmsHPROFILE hProfile = cmsCreateProfilePlaceholder(0);
+
+  ScopeGuard profileGuard([&] () { cmsCloseProfile(hProfile); });
+
+  // Create and save profile, both operations might throw
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Дополнительные функции</h2>
+					<pre><code data-trim class="stretch cpp">
+class ScopeGuard
+{
+  ...
+
+  void Discard()
+  {
+	m_f = nullptr;
+  }
+
+  void Apply()
+  {
+	m_f();
+	m_f = nullptr;
+  }
+
+  ...
+};
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Досрочное освобождение ресурса</h2>
+					<pre><code data-trim class="stretch cpp">
+bool DoScan(double step, int count, IHardware* pHardware)
+{
+  double startPos = pHardware->GetPosition();
+  double pos = startPos;
+
+  ScopeGuard posGuard([&] () { pHardware->SetPosition(startPos); });
+
+  for (int i = 0; i < count; i++)
+  {
+	pos += step;
+	pHardware->SetPosition(pos);
+	if (!pHardware->TakeSnapshot()) return false;
+  }
+  
+  posGuard.Apply();
+
+  // Time consuming operation, like saving snapshots
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Обработка ошибок</h2>
+					<pre><code data-trim class="stretch cpp">
+class IImageStitcher
+{
+public:
+  virtual msa::Status Initialize() = 0;
+  virtual msa::Status StitchImages(const msa::ICollection* pImages) = 0;
+  virtual const char* GetStatusDescr() const = 0;
+};
+
+bool Stitch(IImageStitcher* pStitcher)
+{
+  msa::ICollection* pImages;
+
+  // Populate collection with images
+
+  pStitcher->Initialize();
+  pStitcher->StitchImages(pImages);
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Обработка ошибок</h2>
+					<pre><code data-trim class="stretch cpp">
+bool Stitch(IImageStitcher* pStitcher)
+{
+  msa::ICollection* pImages;
+
+  // Populate collection with images
+
+  if (!pStitcher->Initialize())
+  {
+	std::cout << pStitcher->GetStatusDescr() << std::endl;
+	return false;
+  }
+  if (!pStitcher->StitchImages(pImages))
+  {
+	std::cout << pStitcher->GetStatusDescr() << std::endl;
+	return false;
+  }
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section data-transition="none">
+					<h2>Обработка ошибок</h2>
+					<pre><code data-trim class="stretch cpp">
+bool Stitch(IImageStitcher* pStitcher)
+{
+  msa::ICollection* pImages;
+
+  // Populate collection with images
+
+  ScopeGuard errorGuard([&] () { 
+	std::cout << pStitcher->GetStatusDescr() << std::endl; 
+  });
+
+  if (!pStitcher->Initialize()) return false;
+  if (!pStitcher->StitchImages(pImages)) return false;
+
+  errorGuard.Discard();
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Значения по умолчанию</h2>
+					<pre><code data-trim class="stretch cpp">
+bool InitializeData(Data& data)
+{
+  ScopeGuard defaultGuard([&] () { 
+	data = Data::GetDefaultValue(); 
+  });
+
+  if (!DoFirstInitializationStep(data)) return false;
+  if (!DoSecondInitializationStep(data)) return false;
+  if (!DoThirdInitializationStep(data)) return false;
+
+  defaultGuard.Discard();
+
+  return true;
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Транзакции</h2>
+					<pre><code data-trim class="stretch cpp">
+void SaveData(const Data& data)
+{
+  SaveDataToDatabase(data);  // Might throw
+  ScopeGuard databaseGuard([&] () { RemoveDataFromDatabase(data); });
+
+  SaveDataToDisk(data);  // Might throw
+  ScopeGuard diskGuard([&] () { RemoveDataFromDisk(data); });
+						  
+  SaveDataToCloud(data);  // Might throw
+  
+  diskGuard.Discard();
+  databaseGuard.Discard();
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>RAII: заключение</h2>
+					<ul>
+						<li>Одна из ключевых парадигм в С++</li>
+						<li>Заиграла новыми красками с приходом С++11</li>
+						<li>ScopeGuard заботится об освобождении ресурса сразу после его получения</li>
+						<li>ScopeGuard позволяет мыслить наперёд в различных ситуациях</li>
+					</ul>
+				</section>
+
+			</section>
+
+			<!-- NuGet -->
+			<section>
+
+				<section>
+					<h2><u>boost & NuGet</u></h2>
+				</section>
+
+				<section>
+					<h2>При чём тут NuGet?</h2>
+					<p>
+						Многопоточность в C++11
+					</p>
+					<ul>
+						<li>Пока сыровата</li>
+						<li>Пришла из boost</li>
+						<li>boost очень тяжёлый</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Сборки в С++</h2>
+					<p>
+						Огромное количество вариантов сборки
+					</p>
+					<ul>
+						<li>Configuration: Debug/Release</li>
+						<li>CRT: Static/Dynamic</li>
+						<li>Library: Static/Dynamic</li>
+						<li>Platform: x86/x64</li>
+						<li>Compiler: vc7/vc8/vc9/vc10/vc11/vc12</li>
+						<li>Threading: single/multi</li>
+						<li>Новые версии</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>boost</h2>
+					<p>
+						Сборка всех библиотек для <em>конкретного</em> компилятора и <em>конкретной</em> платформы 
+					</p>
+					<ul>
+						<li>12 вариантов</li>
+						<li>3Гб</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>NuGet-пакет</h2>
+					<p>
+						Отдельный NuGet-пакет для каждой библиотеки boost для <em>всех</em> вариантов <em>конкретного</em> компилятора
+					</p>
+					<ul>
+						<li>Доступен из единого репозитория</li>
+						<li>Выбирает подключаемые .lib-файлы</li>
+						<li>Добавляет зависимые пакеты</li>
+						<li>Копирует .dll-файлы в OutDir</li>
+						<li>Прописывает управляющие макросы</li>
+						<li>≈5Мб</li>
+						<li>Обновляется на новые версии</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>NuGet Package Manager</h2>
+					<p>
+						Встроенное расширение для Visual Studio
+					</p>
+					<img src=".\img\nuget package manager in extensions.png" alt="NuGet Package Manager" />
+				</section>
+
+				<section>
+					<h2>Настройка репозитория</h2>
+					<p>
+						Репозиторий содержит .nupkg-файлы. Можно использовать даже локальную папку.
+					</p>
+					<img src=".\img\nuget package sources.png" alt="Package Sources" />
+				</section>
+
+				<section>
+					<h2>Репозиторий</h2>
+					<p>
+						Пакеты доступны на <a href="https://octonus-teams.com:7843/feeds/third-party-components">NuGet-сервере</a> (пока тестовый режим)
+					</p>
+				</section>
+
+				<section>
+					<h2>Установка пакетов</h2>
+					<img src=".\img\installing packages.png" alt="Installing packages" />
+				</section>
+
+				<section>
+					<h2>Обновление пакетов</h2>
+					<img src=".\img\updating packages.png" alt="Updating packages" />
+				</section>
+
+				<section>
+					<h2>Под капотом</h2>
+					<ul>
+						<li>В проект добавляется файл packages.config</li>
+						<li>В конец .vcxproj-файла добавляются зависимости от MSBuild-скриптов из подключенных пакетов</li>
+						<li>В SolutionDir добавляется папка packages</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>packages.config</h2>
+					<img src=".\img\packages.config.png" alt="Файл packages.config" />
+				</section>
+
+				<section>
+					<h2>Файл проекта</h2>
+					<img src=".\img\modified .vcxproj.png" alt="Файл проекта" />
+				</section>
+
+				<section>
+					<h2>Структура пакета</h2>
+					<img src=".\img\boost filesystem packages contents.png" alt="NuGet Package structure" />
+				</section>
+
+				<section>
+					<h2>Настройка пакетов</h2>
+					<p>
+						Пакеты настраиваются в свойствах проекта
+					</p>
+					<img src=".\img\referenced packages properties.png" alt="Referenced Packages Properties" />
+				</section>
+
+				<section>
+					<h2>Настройка пакетов</h2>
+					<p>
+						Необходимо продублировать настройки CRT
+					</p>
+					<img src=".\img\project master settings.png" alt="Referenced Packages Properties" />
+				</section>
+
+				<section>
+					<h2>boost auto-link</h2>
+					<p>boost сам подключает необходимые .lib-файлы с помощью директив #pragma в зависимости от ряда макросов</p>
+					<ul>
+						<li>CRT: _DEBUG и _DLL, определяются компилятором</li>
+						<li>
+							static/dynamic: BOOST_*_DYN_LINK, определяется пользователем
+							<ul>
+								<li>По умолчанию все библиотеки подключаются статически</li>
+								<li>Если определён макрос BOOST_<em>library</em>_DYN_LINK, библиотека <em>library</em> подключается динамически</li>
+								<li>Если определён макрос BOOST_ALL_DYN_LINK, все библиотеки подключаются динамически</li>
+								<li>Если для пакета библиотеки <em>library</em> в свойствах проекта указана опция Linkage=Dynamic (по умолчанию), то определяется макрос BOOST_<em>library</em>_DYN_LINK</li>
+								<li>Нельзя использовать динамическую линковку для статического CRT</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Пакет msvcbin</h2>
+					<img src=".\img\msvc package.png" alt="MSVC package" />
+				</section>
+
+				<section>
+					<p>
+						Более подробная информация в Confluence: <a href="https://octonus-teams.atlassian.net/wiki/pages/viewpage.action?pageId=7274505">здесь</a> и <a href="https://octonus-teams.atlassian.net/wiki/pages/viewpage.action?pageId=24150020">здесь</a>
+					</p>
+				</section>
+
+			</section>
+
+			<section>
+				<h2>Спасибо за внимание!</h2>
+				<a href="#/1">Назад к содержанию</a>
+			</section>
 
 		</div>
+	</div>
 
-		<script>
-		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.min.js"></script>
 
-		  ga('create', 'UA-43375306-1', 'revealjs.com');
-		  ga('send', 'pageview');
-		</script>
-	</body>
+	<script>
+
+		// Full list of configuration options available here:
+		// https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+			slideNumber: true,
+
+			theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+			transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+			transitionSpeed: 'fast',
+
+			keyboard: {
+				8: 'prev' // go to the previous slide when the backspace key is pressed
+			},
+
+			// Optional libraries used to extend on reveal.js
+			dependencies: [
+				{ src: 'plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } }
+			]
+		});
+
+	</script>
+
+</body>
 </html>
