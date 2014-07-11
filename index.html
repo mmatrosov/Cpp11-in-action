@@ -156,7 +156,7 @@ int main() {
 std::tuple&lt;int, double, std::string&gt; t1(42, 3.14, "foo");
   
 // Deduced types, same as above
-auto t2 = std::make_tuple(42, 3.14, "foo");
+auto t2 = std::make_tuple(42, 3.14, std::string("foo"));
 
 // Explicit retrieval of elements
 int i = std::get<0>(t2);
@@ -742,12 +742,12 @@ bool Stitch(IImageStitcher* pStitcher)
 
   // Populate collection with images
 
-  if (!pStitcher->Initialize())
+  if (pStitcher->Initialize() != msa::STATUS_OK)
   {
     std::cout << pStitcher->GetStatusDescr() << std::endl;
     return false;
   }
-  if (!pStitcher->StitchImages(pImages))
+  if (pStitcher->StitchImages(pImages) != msa::STATUS_OK)
   {
     std::cout << pStitcher->GetStatusDescr() << std::endl;
     return false;
@@ -771,8 +771,8 @@ bool Stitch(IImageStitcher* pStitcher)
     std::cout << pStitcher->GetStatusDescr() << std::endl; 
   });
 
-  if (!pStitcher->Initialize()) return false;
-  if (!pStitcher->StitchImages(pImages)) return false;
+  if (pStitcher->Initialize() != msa::STATUS_OK) return false;
+  if (pStitcher->StitchImages(pImages) != msa::STATUS_OK) return false;
 
   errorGuard.Discard();
 
